@@ -15,10 +15,24 @@ int main(int argc, char *argv[]) {
 
     command[strcspn(command,"\n")] = '\0';
 
-    if(strcmp(command, "exit") == 0)
-      break;
+    char *token = strtok(command, " ");
   
-    printf("%s: command not found\n", command);
+    if(strcmp(token, "exit") == 0)
+      break;
+
+    if(strcmp(token, "echo") == 0) {
+      char *argumento = strtok(NULL, " ");
+      while(argumento != NULL) {
+        printf("%s ", argumento);
+        argumento = strtok(NULL, " ");
+      }
+
+      printf("\n");
+      continue;
+   }
+
+    printf("%s: command not found\n", command);     
+  
   }
   return 0;
 }
