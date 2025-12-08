@@ -1,3 +1,4 @@
+#include <linux/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +18,8 @@ int main(int argc, char *argv[]) {
   // Flush after every printf
   setbuf(stdout, NULL);
 
-  char commands[][10] = {"exit", "echo", "type"};
+  char commands[][20] = {"exit", "echo", "type", "pwd"};
+  int num_commands = sizeof(commands) / sizeof(commands[0]);
   
   while(1) {
     // TODO: Uncomment the code below to pass the first stage
@@ -48,7 +50,7 @@ int main(int argc, char *argv[]) {
      char *linha = strtok(NULL, "");
      if (linha != NULL) {
        int encontrou = 0;
-       for(int i = 0; i < 3; i++) {
+       for(int i = 0; i < num_commands; i++) {
          if(strcmp(commands[i], linha) == 0) {
            printf("%s is a shell builtin\n", linha);
            encontrou = 1;
@@ -82,6 +84,15 @@ int main(int argc, char *argv[]) {
       }
       continue;
    }
+
+  if(strcmp(token, "pwd") == 0) {
+    char cwd[PATH_MAX];
+    if(getcwd(cwd, sizeof(cwd)) != NULL) {
+      printf("%s\n", cwd);
+    }
+    continue; 
+  }
+
 
   char *args[100];
   args[0] = token;
