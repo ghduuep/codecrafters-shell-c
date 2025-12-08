@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#ifdef _WIN32
+#define PATH_SEPARATOR ";"
+#else
+#define PATH_SEPARATOR ":"
+#endif
+
 
 int main(int argc, char *argv[]) {
   // Flush after every printf
@@ -46,11 +54,30 @@ int main(int argc, char *argv[]) {
         }
 
         if(encontrou == 0) {
-          printf("%s: not found\n", linha);
-         }
+          char *path_variable = getenv("PATH");
+          char *path_copy = strdup(path_variable);
+          char *diretorio = strtok(path_copy, PATH_SEPARATOR);
+          
+          while(diretorio != NULL) {
 
-         continue;
+             char *full_path = malloc(strlen(diretorio) + 1 + strlen(linha) + 1);
+             sprintf(full_path, "%s/%s", diretorio, linha);
+             if(access(full_path, X_OK) == 0) {
+                printf("%s is %s\n", linha, full_path);
+                encontrou = 1;
+                break;
+              }
+             diretorio = strtok(NULL, ":");
+             continue;
+            }
+          }
+
+        if(encontrou == 0) {
+          printf("%s: not found\n", token);
+          continue;
+         }
       }
+      continue;
    }
 
     printf("%s: command not found\n", command);     
