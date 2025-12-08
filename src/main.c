@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
           }
 
         if(encontrou == 0) {
-          printf("%s: not found\n", token);
+          printf("%s: not found\n", linha);
           continue;
          }
       }
