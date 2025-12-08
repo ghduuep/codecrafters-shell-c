@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ";"
@@ -80,7 +83,31 @@ int main(int argc, char *argv[]) {
       continue;
    }
 
-    printf("%s: command not found\n", command);     
+  char *args[100];
+  args[0] = token;
+
+  int i = 1;
+
+  while((args[i] = strtok(NULL, " ")) != NULL) {
+    i++;
+  }
+
+  args[i] = NULL;
+
+  pid_t pid = fork();
+
+  if (pid == 0) {
+    execvp(args[0], args);
+    printf("%s: command not found\n", args[0]);
+    exit(1);
+  }
+  else if (pid > 0) {
+    int status;
+    wait(&status);
+  } else {
+    perror("fork failed");
+  }
+    
   
   }
   return 0;
