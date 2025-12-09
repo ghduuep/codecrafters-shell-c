@@ -94,6 +94,9 @@ int main(int argc, char *argv[]) {
 
 void execute_cd(char *path) {
   int changed;
+  if(strcmp(path, "~") == 0) {
+    path = getenv("HOME");
+  }
   changed = chdir(path);
   if (changed != 0) {
     printf("cd: %s: No such file or directory\n", path);
