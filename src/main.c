@@ -13,6 +13,10 @@
 #define PATH_SEPARATOR ":"
 #endif
 
+void execute_type(char *token, char commands[][20], int num_commands); 
+void execute_pwd();  
+void execute_echo(char *token);
+void execute_cd(char *token);
 
 int main(int argc, char *argv[]) {
   // Flush after every printf
@@ -36,61 +40,25 @@ int main(int argc, char *argv[]) {
       break;
 
     if(strcmp(token, "echo") == 0) {
-      char *argumento = strtok(NULL, " ");
-      while(argumento != NULL) {
-        printf("%s ", argumento);
-        argumento = strtok(NULL, " ");
-      }
-
-      printf("\n");
+      execute_echo(token);
       continue;
    }
 
    if(strcmp(token, "type") == 0) {
-     char *linha = strtok(NULL, "");
-     if (linha != NULL) {
-       int encontrou = 0;
-       for(int i = 0; i < num_commands; i++) {
-         if(strcmp(commands[i], linha) == 0) {
-           printf("%s is a shell builtin\n", linha);
-           encontrou = 1;
-           break;
-         }
-        }
-
-        if(encontrou == 0) {
-          char *path_variable = getenv("PATH");
-          char *path_copy = strdup(path_variable);
-          char *diretorio = strtok(path_copy, PATH_SEPARATOR);
-          
-          while(diretorio != NULL) {
-
-             char *full_path = malloc(strlen(diretorio) + 1 + strlen(linha) + 1);
-             sprintf(full_path, "%s/%s", diretorio, linha);
-             if(access(full_path, X_OK) == 0) {
-                printf("%s is %s\n", linha, full_path);
-                encontrou = 1;
-                break;
-              }
-             diretorio = strtok(NULL, ":");
-             continue;
-            }
-          }
-
-        if(encontrou == 0) {
-          printf("%s: not found\n", linha);
-          continue;
-         }
-      }
-      continue;
+     token = strtok(NULL, " ");
+     execute_type(token, commands, num_commands);
+     continue;
    }
 
   if(strcmp(token, "pwd") == 0) {
-    char cwd[PATH_MAX];
-    if(getcwd(cwd, sizeof(cwd)) != NULL) {
-      printf("%s\n", cwd);
-    }
+    execute_pwd();
     continue; 
+  }
+
+  if(strcmp(token, "cd") == 0) {
+    token = strtok(NULL, " ");
+    execute_cd(token);
+    continue;
   }
 
 
@@ -123,3 +91,70 @@ int main(int argc, char *argv[]) {
   }
   return 0;
 }
+
+void execute_cd(char *path) {
+  int changed;
+  changed = chdir(path);
+  if (changed != 0) {
+    printf("cd: %s: No such file or directory\n", path);
+  }
+}
+
+void execute_echo(char *token) {
+  char *argumento = strtok(NULL, " ");
+      while(argumento != NULL) {
+        printf("%s ", argumento);
+        argumento = strtok(NULL, " ");
+  }
+  printf("\n");
+}
+
+void execute_pwd() {
+  char cwd[PATH_MAX];
+    if(getcwd(cwd, sizeof(cwd)) != NULL) {
+      printf("%s\n", cwd);
+    }
+}
+
+void execute_type(char *token, char commands[][20], int num_commands) {
+ 
+   if (token != NULL) {
+         int encontrou = 0;
+         for(int i = 0; i < num_commands; i++) {
+           if(strcmp(commands[i], token) == 0) {
+             printf("%s is a shell builtin\n", token);
+             encontrou = 1;
+             break;
+           }
+          }
+
+          if(encontrou == 0) {
+            char *path_variable = getenv("PATH");
+            char *path_copy = strdup(path_variable);
+            char *diretorio = strtok(path_copy, PATH_SEPARATOR);
+          
+            while(diretorio != NULL) {
+
+               char *full_path = malloc(strlen(diretorio) + 1 + strlen(token) + 1);
+               sprintf(full_path, "%s/%s", diretorio, token);
+               if(access(full_path, X_OK) == 0) {
+                  printf("%s is %s\n", token, full_path);
+                  encontrou = 1;
+                  free(full_path);
+                  break;
+                }
+               diretorio = strtok(NULL, PATH_SEPARATOR);
+               free(full_path);
+               continue;
+              }
+
+              free(path_copy);
+            }
+
+          if(encontrou == 0) {
+            printf("%s: not found\n", token);
+           }
+         
+        }
+
+ } 
